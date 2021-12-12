@@ -1,6 +1,6 @@
 # A Handy Port Forwarding Tool For Docker
 
-Updating port forward configs for a running docker container is not possible at the moment (Engine 20.10.11). If you found that frustrating, this tool might help. By running a proxy server, it can forward network traffic to your specified container.
+Publishing ports for a running docker container is not possible at the moment (Well, to be fair, it is not impossible but requires multiple commands with `docker-proxy` and `iptables` and superuser access). If you find that frustrating, this tool might help. By running a proxy server, it can forward network traffic to your specified container.
 
 ```bash
 # build the tool

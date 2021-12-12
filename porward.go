@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -86,11 +85,11 @@ func main() {
 	target_networkMode := target_container.HostConfig.NetworkMode
 
 	// pull gost docker image
-	image_pull_resp, err := cli.ImagePull(ctx, "docker.io/ginuerzh/gost:2.11.1", types.ImagePullOptions{})
+	_, err = cli.ImagePull(ctx, "docker.io/ginuerzh/gost:2.11.1", types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
-	io.Copy(os.Stdout, image_pull_resp)
+	// io.Copy(os.Stdout, image_pull_resp)
 
 	// create gost docker container
 	proxy_config := container.Config{
@@ -123,7 +122,7 @@ func main() {
 			MaximumRetryCount: 0,
 		},
 	}
-	proxy_create_resp, err := cli.ContainerCreate(ctx, &proxy_config, &proxy_host_config, nil, nil, "")
+	proxy_create_resp, err := cli.ContainerCreate(ctx, &proxy_config, &proxy_host_config, nil, nil, fmt.Sprintf("porward__%s", *target_name))
 	if err != nil {
 		panic(err)
 	}
