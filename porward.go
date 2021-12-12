@@ -109,7 +109,7 @@ func main() {
 	proxy_host_config := container.HostConfig{
 		NetworkMode: container.NetworkMode(target_networkMode),
 		PortBindings: nat.PortMap{
-			nat.Port(fmt.Sprintf("%s/tcp", target_port)): []nat.PortBinding{
+			nat.Port(fmt.Sprintf("%s/tcp", host_port)): []nat.PortBinding{
 				nat.PortBinding{
 					HostIP:   "",
 					HostPort: host_port,
