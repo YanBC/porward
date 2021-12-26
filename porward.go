@@ -60,8 +60,13 @@ func main() {
 	target_container := types.Container{}
 	container_found := false
 	for _, target_container = range running_containers {
-		if target_container.Names[0] == fmt.Sprintf("/%s", *target_name) {
-			container_found = true
+		for _, target_container_name := range target_container.Names {
+			if target_container_name == fmt.Sprintf("/%s", *target_name) {
+				container_found = true
+				break
+			}
+		}
+		if container_found {
 			break
 		}
 	}
@@ -70,16 +75,14 @@ func main() {
 	}
 
 	target_network := ""
-	target_ip4_addr := ""
 	networks := target_container.NetworkSettings.Networks
-	for key, value := range networks {
+	for key := range networks {
 		if key != "host" {
 			target_network = key
-			target_ip4_addr = value.IPAddress
 			break
 		}
 	}
-	if target_network == "" || target_ip4_addr == "" {
+	if target_network == "" {
 		panic(fmt.Sprintf("fail to get network settings for %s", *target_name))
 	}
 	target_networkMode := target_container.HostConfig.NetworkMode
@@ -94,9 +97,9 @@ func main() {
 	// create gost docker container
 	proxy_config := container.Config{
 		Image: "ginuerzh/gost:2.11.1",
-		Cmd:   []string{"-L", fmt.Sprintf("tcp://:%s/%s:%s", host_port, target_ip4_addr, target_port)},
+		Cmd:   []string{"-L", fmt.Sprintf("tcp://:%s/%s:%s", host_port, "target", target_port)},
 		Healthcheck: &container.HealthConfig{
-			Test:     []string{"CMD-SHELL", fmt.Sprintf("ping -c 1 %s", target_ip4_addr)},
+			Test:     []string{"CMD-SHELL", fmt.Sprintf("ping -c 1 %s", "target")},
 			Interval: 2 * time.Second,
 			Retries:  3,
 			Timeout:  1 * time.Second,
@@ -109,7 +112,7 @@ func main() {
 		NetworkMode: container.NetworkMode(target_networkMode),
 		PortBindings: nat.PortMap{
 			nat.Port(fmt.Sprintf("%s/tcp", host_port)): []nat.PortBinding{
-				nat.PortBinding{
+				{
 					HostIP:   "",
 					HostPort: host_port,
 				},
@@ -121,8 +124,9 @@ func main() {
 			Name:              "no",
 			MaximumRetryCount: 0,
 		},
+		Links: []string{fmt.Sprintf("%s:%s", *target_name, "target")},
 	}
-	proxy_create_resp, err := cli.ContainerCreate(ctx, &proxy_config, &proxy_host_config, nil, nil, fmt.Sprintf("porward__%s", *target_name))
+	proxy_create_resp, err := cli.ContainerCreate(ctx, &proxy_config, &proxy_host_config, nil, nil, "")
 	if err != nil {
 		panic(err)
 	}
