@@ -25,5 +25,5 @@ func IsContainerLive(ctx context.Context, cli *client.Client, name_or_id string)
 }
 
 func GetDockerImage() string {
-	return "docker.io/yanbc/porward:latest"
+	return "yanbc/porward:latest"
 }

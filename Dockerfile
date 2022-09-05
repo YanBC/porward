@@ -1,9 +1,10 @@
 FROM golang:1.17 as build
 
-RUN git clone https://github.com/YanBC/porward.git /porward && \
-cd /porward/cmds/forward && \
+COPY . /porward
+
+RUN cd /porward/cmds/forward && \
 go build
 
-FROM busybox:1.34.1 
+FROM ubuntu:18.04
 
 COPY --from=build /porward/cmds/forward/forward /bin

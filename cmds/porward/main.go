@@ -9,6 +9,7 @@ import (
 	"github.com/YanBC/porward/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -51,7 +52,7 @@ func init() {
 		os.Exit(2)
 	}
 
-	fmt.Printf("parsing container %s port %d to host machine port %d\n", containerName, containerPort, hostPort)
+	fmt.Printf("serving container %s port %d on host machine port %d\n", containerName, containerPort, hostPort)
 }
 
 func main() {
@@ -73,10 +74,10 @@ func main() {
 
 	// pull docker image
 	image_name := utils.GetDockerImage()
-	if _, err = cli.ImagePull(ctx, image_name, types.ImagePullOptions{}); err != nil {
-		fmt.Println("fail to pull image")
-		return
-	}
+	// if _, err = cli.ImagePull(ctx, image_name, types.ImagePullOptions{}); err != nil {
+	// 	fmt.Println("fail to pull image")
+	// 	return
+	// }
 
 	// create docker container
 	container_config := container.Config{
@@ -109,6 +110,14 @@ func main() {
 			MaximumRetryCount: 0,
 		},
 		Links: []string{fmt.Sprintf("%s:%s", containerName, "target")},
+		Mounts: []mount.Mount{
+			mount.Mount{
+				Type:     mount.TypeBind,
+				Source:   "/run/docker.sock",
+				Target:   "/run/docker.sock",
+				ReadOnly: false,
+			},
+		},
 	}
 	create_resp, err := cli.ContainerCreate(
 		ctx, &container_config, &host_config, nil, nil, "")

@@ -49,6 +49,8 @@ func main() {
 		fmt.Printf("fail to create forward server, %s", err)
 		os.Exit(2)
 	}
+	go server.Serve()
+	fmt.Println("forward server started")
 
 	// wait for container to exit
 	ctx := context.Background()
